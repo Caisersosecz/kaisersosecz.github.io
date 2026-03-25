@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Clock</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .clock { font-size: 2em; margin: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Digital Clock</h1>
+    <div class="clock" id="clock"></div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const utc = now.toUTCString().substr(17, 8);
+            const ist = new Date(now.getTime() + (5.5 * 60 * 60 * 1000)).toUTCString().substr(17, 8);
+            const est = new Date(now.getTime() - (5 * 60 * 60 * 1000)).toUTCString().substr(17, 8);
+            const cet = new Date(now.getTime() + (1 * 60 * 60 * 1000)).toUTCString().substr(17, 8);
+
+            document.getElementById('clock').innerHTML = \
+                `<p>UTC: ${utc}</p>` + \
+                `<p>IST: ${ist}</p>` + \
+                `<p>EST: ${est}</p>` + \
+                `<p>CET: ${cet}</p>`;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
