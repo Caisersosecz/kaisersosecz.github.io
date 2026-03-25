@@ -1,0 +1,734 @@
+index.html
+
+<!DOCTYPE html>
+
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GLUKÓZA">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="Mobilní aplikace pro sledování glukózy a váhy. Jednoduché, rychlé a bezpečné.">
+    <title>💊 GLUKÓZA - Sleduj glukózu</title>
+
+```
+<!-- App ikona pro browser a iOS -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'><defs><linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%232563eb;stop-opacity:1'/><stop offset='100%' style='stop-color:%231e40af;stop-opacity:1'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='url(%23grad)'/><path d='M90 40 C90 40, 65 75, 65 95 C65 117.9, 76.7 130, 90 130 C103.3 130, 115 117.9, 115 95 C115 75, 90 40, 90 40 Z' fill='white'/><circle cx='90' cy='105' r='28' fill='none' stroke='white' stroke-width='3' opacity='0.7'/><circle cx='90' cy='105' r='18' fill='none' stroke='white' stroke-width='2' opacity='0.5'/></svg>">
+
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'><defs><linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%232563eb;stop-opacity:1'/><stop offset='100%' style='stop-color:%231e40af;stop-opacity:1'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='url(%23grad)'/><path d='M90 40 C90 40, 65 75, 65 95 C65 117.9, 76.7 130, 90 130 C103.3 130, 115 117.9, 115 95 C115 75, 90 40, 90 40 Z' fill='white'/><circle cx='90' cy='105' r='28' fill='none' stroke='white' stroke-width='3' opacity='0.7'/><circle cx='90' cy='105' r='18' fill='none' stroke='white' stroke-width='2' opacity='0.5'/></svg>">
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    html, body {
+        height: 100%;
+        width: 100%;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+        width: 100%;
+        max-width: 500px;
+        height: 100vh;
+        max-height: 100vh;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 0 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        color: white;
+        padding: max(16px, env(safe-area-inset-top)) 24px 20px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        backdrop-filter: blur(10px);
+    }
+
+    .header-icon svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .header-content {
+        flex: 1;
+    }
+
+    .header-title {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        letter-spacing: -0.5px;
+    }
+
+    .header-subtitle {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+    }
+
+    .stats-bar {
+        background: #f0f4ff;
+        padding: 16px 24px;
+        border-bottom: 1px solid #dbeafe;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .stat {
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: #1e40af;
+        font-weight: 700;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+        font-weight: 800;
+        color: #1e3a8a;
+        line-height: 1;
+    }
+
+    .stat-unit {
+        font-size: 10px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+
+    .tabs {
+        display: flex;
+        border-bottom: 2px solid #e5e7eb;
+        background: white;
+        flex-shrink: 0;
+        padding: 0 12px;
+    }
+
+    .tab {
+        flex: 1;
+        padding: 14px 12px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-weight: 600;
+        color: #9ca3af;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        white-space: nowrap;
+    }
+
+    .tab.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+    }
+
+    .content {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 24px;
+        padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 13px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 16px;
+        font-family: inherit;
+        font-weight: 500;
+        transition: all 0.2s;
+        background: white;
+        color: #1f2937;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .form-group select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 20px;
+        padding-right: 40px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-group input::placeholder {
+        color: #d1d5db;
+    }
+
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 24px;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-submit:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #1f2937;
+        margin-top: 12px;
+        box-shadow: none;
+        font-weight: 600;
+    }
+
+    .btn-secondary:active {
+        background: #e5e7eb;
+    }
+
+    .shortcuts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .shortcut-btn {
+        background: #f3f4f6;
+        border: 2px solid #e5e7eb;
+        padding: 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        color: #374151;
+        transition: all 0.2s;
+    }
+
+    .shortcut-btn:active {
+        background: #e5e7eb;
+        border-color: #d1d5db;
+        transform: scale(0.95);
+    }
+
+    .entry {
+        background: linear-gradient(135deg, #f0f4ff 0%, #e0e9ff 100%);
+        border: 2px solid #dbeafe;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .entry.high {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border-color: #fecaca;
+    }
+
+    .entry.warning {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-color: #fde68a;
+    }
+
+    .entry-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .entry-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+    .entry-date {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .entry-time {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        background: rgba(37, 99, 235, 0.15);
+        color: #1e40af;
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
+
+    .entry.high .entry-time {
+        background: rgba(220, 38, 38, 0.15);
+        color: #991b1b;
+    }
+
+    .entry.warning .entry-time {
+        background: rgba(180, 83, 9, 0.15);
+        color: #92400e;
+    }
+
+    .entry-glucose {
+        font-size: 32px;
+        font-weight: 800;
+        color: #1e40af;
+        line-height: 1;
+        margin: 4px 0;
+        letter-spacing: -1px;
+    }
+
+    .entry.high .entry-glucose {
+        color: #991b1b;
+    }
+
+    .entry.warning .entry-glucose {
+        color: #92400e;
+    }
+
+    .entry-details {
+        font-size: 12px;
+        color: #6b7280;
+        display: flex;
+        gap: 12px;
+        margin-top: 6px;
+        flex-wrap: wrap;
+    }
+
+    .entry-status {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .btn-delete {
+        background: rgba(220, 38, 38, 0.1);
+        border: none;
+        color: #dc2626;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        transition: all 0.2s;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .btn-delete:active {
+        background: rgba(220, 38, 38, 0.2);
+        transform: scale(0.95);
+    }
+
+    .footer {
+        background: linear-gradient(135deg, #f0f4ff 0%, #e0e9ff 100%);
+        border-top: 2px solid #dbeafe;
+        padding: 16px 24px max(16px, env(safe-area-inset-bottom));
+        text-align: center;
+        font-size: 12px;
+        color: #4b5563;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+    }
+
+    .empty-state p {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #6b7280;
+    }
+
+    .empty-state span {
+        font-size: 13px;
+        color: #d1d5db;
+    }
+
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .success-message {
+        background: #d1fae5;
+        border: 2px solid #6ee7b7;
+        color: #065f46;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        font-weight: 600;
+        font-size: 13px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @media (max-width: 500px) {
+        .app {
+            border-radius: 0;
+        }
+
+        .header {
+            padding: max(16px, env(safe-area-inset-top)) 16px 16px;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 52px;
+            height: 52px;
+        }
+
+        .header-title {
+            font-size: 24px;
+        }
+
+        .content {
+            padding: 20px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="app">
+        <!-- Header s ikonou -->
+        <div class="header">
+            <div class="header-icon">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100" height="100" rx="20" fill="#ffffff" opacity="0.15"/>
+                    <path d="M50 20 C50 20, 35 45, 35 55 C35 67.7, 41.7 75, 50 75 C58.3 75, 65 67.7, 65 55 C65 45, 50 20, 50 20 Z" fill="white"/>
+                    <circle cx="50" cy="60" r="18" fill="none" stroke="white" stroke-width="2" opacity="0.7"/>
+                    <circle cx="50" cy="60" r="12" fill="none" stroke="white" stroke-width="1.5" opacity="0.5"/>
+                </svg>
+            </div>
+            <div class="header-content">
+                <div class="header-title">GLUKÓZA</div>
+                <div class="header-subtitle">Sleduj svá měření kdykoliv</div>
+            </div>
+        </div>
+
+```
+    <!-- Statistiky -->
+    <div class="stats-bar">
+        <div class="stat">
+            <div class="stat-label">Průměr</div>
+            <div class="stat-value" id="avgGlucose">—</div>
+            <div class="stat-unit">mmol/l</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Max</div>
+            <div class="stat-value" id="maxGlucose">—</div>
+            <div class="stat-unit">mmol/l</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Váha</div>
+            <div class="stat-value" id="lastWeight">—</div>
+            <div class="stat-unit">kg</div>
+        </div>
+    </div>
+
+    <!-- Záložky -->
+    <div class="tabs">
+        <button class="tab active" data-tab="add">➕ Přidat</button>
+        <button class="tab" data-tab="list">📋 Historie</button>
+    </div>
+
+    <!-- Obsah -->
+    <div class="content">
+        <!-- Přidání měření -->
+        <div id="add" class="tab-content active">
+            <div class="shortcuts">
+                <button class="shortcut-btn" onclick="setTimeNow('Na lačno')">Na lačno</button>
+                <button class="shortcut-btn" onclick="setTimeNow('Po obědě')">Po obědě</button>
+                <button class="shortcut-btn" onclick="setTimeNow('Po večeři')">Po večeři</button>
+                <button class="shortcut-btn" onclick="setTimeNow('Po jídle')">Po jídle</button>
+            </div>
+
+            <div class="form-group">
+                <label>📅 Datum</label>
+                <input type="date" id="date">
+            </div>
+            <div class="form-group">
+                <label>🕐 Čas měření</label>
+                <select id="time">
+                    <option>Na lačno</option>
+                    <option>Po obědě</option>
+                    <option>Po večeři</option>
+                    <option>Po jídle</option>
+                    <option>Jiné</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>🩸 Glukóza (mmol/l)</label>
+                <input type="number" id="glucose" placeholder="6.5" step="0.1" inputmode="decimal">
+            </div>
+            <div class="form-group">
+                <label>⚖️ Váha (kg) - volitelně</label>
+                <input type="number" id="weight" placeholder="121.5" step="0.1" inputmode="decimal">
+            </div>
+            <button class="btn-submit" onclick="addEntry()">✓ Uložit měření</button>
+        </div>
+
+        <!-- Historie -->
+        <div id="list" class="tab-content">
+            <div id="successMsg"></div>
+            <div id="entriesList"></div>
+        </div>
+    </div>
+
+    <!-- Patička -->
+    <div class="footer">
+        <strong>⚠️</strong> Aplikace je jen na sledování. Konzultuj lékaře!
+    </div>
+</div>
+
+<script>
+    let entries = JSON.parse(localStorage.getItem('glucozaEntries')) || [
+        { id: 1, date: '14.3.2026', time: 'Na lačno', glucose: 6.4, weight: 121.6, note: '' },
+        { id: 2, date: '14.3.2026', time: 'Po obědě', glucose: 6.7, weight: null, note: '' },
+        { id: 3, date: '15.3.2026', time: 'Na lačno', glucose: 6.7, weight: null, note: '' },
+        { id: 4, date: '21.3.2026', time: 'Na lačno', glucose: 7.5, weight: 120.7, note: '' },
+        { id: 5, date: '24.3.2026', time: 'Po jídle', glucose: 10.3, weight: null, note: 'Po chlebu' },
+        { id: 6, date: '25.3.2026', time: 'Po jídle', glucose: 8.0, weight: null, note: '' },
+    ];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('date').valueAsDate = new Date();
+        updateStats();
+        renderEntries();
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+    });
+
+    function saveToLocalStorage() {
+        localStorage.setItem('glucozaEntries', JSON.stringify(entries));
+    }
+
+    function updateStats() {
+        const avgGlucose = entries.length > 0 
+            ? (entries.reduce((sum, e) => sum + e.glucose, 0) / entries.length).toFixed(1)
+            : '—';
+        const maxGlucose = entries.length > 0 
+            ? Math.max(...entries.map(e => e.glucose)).toFixed(1)
+            : '—';
+        const lastWeight = entries.find(e => e.weight)?.weight || null;
+
+        document.getElementById('avgGlucose').textContent = avgGlucose;
+        document.getElementById('maxGlucose').textContent = maxGlucose;
+        document.getElementById('lastWeight').textContent = lastWeight ? lastWeight.toFixed(1) : '—';
+    }
+
+    function getStatus(glucose) {
+        if (glucose < 5.6) return { status: '✓ OK', class: '' };
+        if (glucose < 7.0) return { status: '⚠️ Pozor', class: 'warning' };
+        return { status: '⚠️⚠️ Vysoká', class: 'high' };
+    }
+
+    function renderEntries() {
+        const list = document.getElementById('entriesList');
+        
+        if (entries.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <p>Zatím žádná měření</p>
+                    <span>Začni tím, že přidáš první měření</span>
+                </div>
+            `;
+            return;
+        }
+
+        const sortedEntries = [...entries].reverse();
+        list.innerHTML = sortedEntries.map(entry => {
+            const { status, class: statusClass } = getStatus(entry.glucose);
+            return `
+                <div class="entry ${statusClass}">
+                    <div class="entry-info">
+                        <div class="entry-header">
+                            <div class="entry-date">${entry.date}</div>
+                            <div class="entry-time">${entry.time}</div>
+                        </div>
+                        <div class="entry-glucose">${entry.glucose}</div>
+                        <div class="entry-details">
+                            <span class="entry-status">${status}</span>
+                            ${entry.weight ? `<span>⚖️ ${entry.weight} kg</span>` : ''}
+                            ${entry.note ? `<span>🍽️ ${entry.note}</span>` : ''}
+                        </div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteEntry(${entry.id})">🗑️</button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function addEntry() {
+        const date = document.getElementById('date').value;
+        const time = document.getElementById('time').value;
+        const glucose = parseFloat(document.getElementById('glucose').value);
+        const weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
+
+        if (!glucose) {
+            alert('❌ Zadej glukózu!');
+            return;
+        }
+
+        const [year, month, day] = date.split('-');
+        const formattedDate = `${day}.${month}.${year}`;
+
+        entries.push({
+            id: Date.now(),
+            date: formattedDate,
+            time: time,
+            glucose: glucose,
+            weight: weight,
+            note: ''
+        });
+
+        saveToLocalStorage();
+        updateStats();
+        renderEntries();
+
+        document.getElementById('glucose').value = '';
+        document.getElementById('weight').value = '';
+        document.getElementById('date').valueAsDate = new Date();
+
+        showSuccess('✅ Měření uloženo!');
+        document.querySelectorAll('.tab')[1].click();
+    }
+
+    function setTimeNow(time) {
+        document.getElementById('time').value = time;
+        document.getElementById('glucose').focus();
+    }
+
+    function deleteEntry(id) {
+        if (confirm('Opravdu smazat?')) {
+            entries = entries.filter(e => e.id !== id);
+            saveToLocalStorage();
+            updateStats();
+            renderEntries();
+        }
+    }
+
+    function showSuccess(message) {
+        const msg = document.getElementById('successMsg');
+        msg.innerHTML = `<div class="success-message">${message}</div>`;
+        setTimeout(() => { msg.innerHTML = ''; }, 3000);
+    }
+</script>
+```
+
+</body>
+</html>
