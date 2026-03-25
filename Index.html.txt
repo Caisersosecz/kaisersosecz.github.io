@@ -1,0 +1,214 @@
+index.html
+
+Scout.html
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProScout v3.0 | Professional Scouting Tool</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        :root { --primary: #1a73e8; --secondary: #e74c3c; --bg: #f1f3f4; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #3c4043; }
+        .container { max-width: 900px; margin: auto; background: var(--white); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        /* Auth */
+        .auth-box { text-align: center; padding: 50px 20px; }
+        .auth-box input { display: block; width: 100%; max-width: 300px; margin: 10px auto; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+
+        /* App Layout */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f3f4; padding-bottom: 20px; margin-bottom: 25px; }
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
+
+        /* Photo & Profile */
+        .photo-container { position: relative; width: 160px; height: 160px; margin: 0 auto 20px; border-radius: 50%; border: 4px solid var(--primary); overflow: hidden; background: #e8f0fe; cursor: pointer; }
+        .photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-container input { position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; }
+
+        /* UI Elements */
+        label { font-weight: 600; font-size: 14px; display: block; margin-top: 15px; margin-bottom: 5px; color: #5f6368; }
+        input[type="text"], input[type="number"], select, textarea { 
+            width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 8px; box-sizing: border-box; font-size: 15px;
+        }
+        input[type="range"] { width: 100%; height: 8px; border-radius: 5px; background: #ddd; accent-color: var(--primary); margin: 10px 0; }
+        
+        .score-badge { background: var(--primary); color: white; padding: 8px 18px; border-radius: 30px; font-weight: 700; font-size: 18px; }
+        
+        .btn { border: none; padding: 15px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px; transition: 0.3s; width: 100%; margin-top: 15px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-pdf { background: var(--secondary); color: white; }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    </style>
+</head>
+<body>
+
+<div id="auth-screen" class="container auth-box">
+    <h1 style="color: var(--primary);">ProScout v3.0</h1>
+    <p>Zadejte své skautské údaje</p>
+    <input type="email" id="login-email" placeholder="Email (např. skaut@klub.cz)">
+    <input type="password" id="login-pass" placeholder="Heslo">
+    <button class="btn btn-primary" onclick="login()">Vstoupit do systému</button>
+</div>
+
+<div id="app-screen" class="container" style="display:none;">
+    <div class="header">
+        <div>
+            <h2 id="display-name" style="margin:0; color: var(--primary);">Nový report</h2>
+            <small id="display-email" style="color:#70757a;"></small>
+        </div>
+        <div class="score-badge">Scout Score: <span id="avg-score">60</span>%</div>
+    </div>
+
+    <div id="report-to-pdf">
+        <div class="main-grid">
+            <div class="profile-side">
+                <div class="photo-container">
+                    <img id="preview" src="https://www.w3schools.com/howto/img_avatar.png">
+                    <input type="file" accept="image/*" onchange="loadPhoto(this)">
+                </div>
+                
+                <div class="input-group">
+                    <label>Jméno hráče</label>
+                    <input type="text" id="p-name" placeholder="např. Adam Hložek" oninput="syncName()">
+                </div>
+
+                <div style="display:flex; gap: 15px;">
+                    <div style="flex:1">
+                        <label>Číslo dresu</label>
+                        <input type="number" id="p-number" value="10">
+                    </div>
+                    <div style="flex:2">
+                        <label>Pozice</label>
+                        <select id="p-pos">
+                            <option>Brankář</option>
+                            <option>Obránce</option>
+                            <option selected>Záložník</option>
+                            <option>Útočník</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="sliders">
+                    <label>Rychlost</label> <input type="range" id="v1" value="70" oninput="refresh()">
+                    <label>Technika</label> <input type="range" id="v2" value="60" oninput="refresh()">
+                    <label>Střelba</label> <input type="range" id="v3" value="50" oninput="refresh()">
+                    <label>Fyzika</label> <input type="range" id="v4" value="65" oninput="refresh()">
+                    <label>Taktika</label> <input type="range" id="v5" value="55" oninput="refresh()">
+                </div>
+            </div>
+
+            <div class="analysis-side">
+                <canvas id="scoutChart" width="400" height="400"></canvas>
+                
+                <label>Osobní poznámky skauta</label>
+                <textarea id="p-notes" rows="6" placeholder="Např.: Výborný v situacích 1v1, slabší hra hlavou..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+        <button class="btn btn-primary" onclick="alert('Data připravena pro Firebase!')">💾 ULOŽIT HRÁČE</button>
+        <button class="btn btn-pdf" onclick="generatePDF()">📄 EXPORTOVAT PDF</button>
+    </div>
+</div>
+
+<script>
+    // 1. LOGIN LOGIKA
+    function login() {
+        const email = document.getElementById('login-email').value;
+        if(email.includes('@')) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'block';
+            document.getElementById('display-email').innerText = "Aktivní skaut: " + email;
+        } else { alert("Zadejte platný pracovní email."); }
+    }
+
+    // 2. CHART LOGIKA (Radar Chart)
+    const ctx = document.getElementById('scoutChart').getContext('2d');
+    let myChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Rychlost', 'Technika', 'Střelba', 'Fyzika', 'Taktika'],
+            datasets: [{
+                label: 'Hodnocený hráč',
+                data: [70, 60, 50, 65, 55],
+                backgroundColor: 'rgba(26, 115, 232, 0.2)',
+                borderColor: '#1a73e8',
+                borderWidth: 3,
+                pointBackgroundColor: '#1a73e8'
+            }, {
+                label: 'Benchmark (Průměr pozice)',
+                data: [75, 75, 70, 70, 70],
+                backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                borderColor: 'rgba(0, 0, 0, 0.2)',
+                borderWidth: 1,
+                borderDash: [5, 5]
+            }]
+        },
+        options: { 
+            scales: { r: { min: 0, max: 100, ticks: { display: false } } },
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    function refresh() {
+        const vals = [
+            parseInt(document.getElementById('v1').value),
+            parseInt(document.getElementById('v2').value),
+            parseInt(document.getElementById('v3').value),
+            parseInt(document.getElementById('v4').value),
+            parseInt(document.getElementById('v5').value)
+        ];
+        myChart.data.datasets[0].data = vals;
+        myChart.update();
+
+        // Výpočet průměru
+        const score = Math.round(vals.reduce((a, b) => a + b) / vals.length);
+        document.getElementById('avg-score').innerText = score;
+    }
+
+    function syncName() {
+        const name = document.getElementById('p-name').value;
+        document.getElementById('display-name').innerText = name || "Nový report";
+    }
+
+    // 3. FOTO LOGIKA
+    function loadPhoto(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => document.getElementById('preview').src = e.target.result;
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 4. PDF EXPORT
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const report = document.getElementById('report-to-pdf');
+        
+        // Vytvoření snímku obrazovky
+        const canvas = await html2canvas(report, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const width = pdf.internal.pageSize.getWidth();
+        const height = (canvas.height * width) / canvas.width;
+        
+        pdf.text("OFFICIAL SCOUTING REPORT", 105, 10, { align: "center" });
+        pdf.addImage(imgData, 'PNG', 0, 20, width, height);
+        
+        const name = document.getElementById('p-name').value || "Hrac";
+        pdf.save(`Report_${name}.pdf`);
+    }
+</script>
+
+</body>
+</html>
